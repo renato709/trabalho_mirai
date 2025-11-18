@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gestão Contratual — Protótipo Completo</title>
+  <style>
+    :root{
+      --blue:#0a6cff;
+      --dark:#0b1220;
+      --muted:#7b7b7b;
+      --card-bg:#f7f9fc;
+      --accent:#0a6cff;
+      --radius:10px;
+      --max-width:1200px;
+      --gap:18px;
+      --bg: #ffffff;
+      --text: #0b1220;
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    [data-theme="dark"]{
+      --bg: #071023;
+      --text: #e6eef9;
+      --card-bg: #0b1227;
+    }
+
+    *{box-sizing:border-box}
+    html,body,#app{height:100%;}
+    body{
+      margin:0;
+      color:var(--text);
+      background:var(--bg);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.35;
+    }
+
+    /* layout */
+    .app{display:flex;min-height:100vh;gap:var(--gap);max-width:1400px;margin:20px auto;padding:20px}
+    .sidebar{width:240px;background:var(--accent);color:white;padding:18px;border-radius:12px;display:flex;flex-direction:column;gap:12px;flex-shrink:0}
+    .logo{font-weight:800;font-size:22px;color:#fff;display:flex;align-items:center;gap:8px}
+    .nav-btn{background:transparent;border:none;color:#fff;padding:10px 12px;border-radius:8px;text-align:left;cursor:pointer;font-weight:600}
+    .nav-btn:hover{background:rgba(255,255,255,0.08)}
+    .sidebar .muted{opacity:0.85;font-size:13px}
+
+    .main{flex:1;min-width:0}
+    .top{display:flex;align-items:center;justify-content:space-between;padding:6px 12px}
+    .greeting{font-size:18px;font-weight:600}
+
+    .search-wrap{display:flex;align-items:center;gap:12px;max-width:480px}
+    .search{flex:1;border:2px solid rgba(11,18,32,0.06);padding:10px 14px;border-radius:999px;outline:none;background:transparent;color:var(--text)}
+
+    .controls{display:flex;gap:18px;padding:20px 0;flex-wrap:wrap}
+    .filter{background:var(--card-bg);padding:12px 20px;border-radius:12px;min-width:160px;text-align:center;font-weight:600}
+    .new-ct{background:var(--accent);color:white;padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
+
+    /* cards and table */
+    .card{background:transparent;padding:18px;border-radius:12px}
+    table{width:100%;border-collapse:collapse;font-size:15px}
+    th,td{padding:10px 12px}
+    thead th{font-weight:700;border-bottom:2px solid rgba(11,18,32,0.06);text-align:left}
+    tbody tr td{border-bottom:1px solid rgba(11,18,32,0.04)}
+    .status{padding:6px 10px;border-radius:999px;font-weight:700;font-size:13px}
+
+    .status.ativo{background:#e8f5ff;color:#0a6cff}
+    .status.vence{background:#fff6e6;color:#d47b00}
+    .status.encerrado{background:#fdecec;color:#b30000}
+    .status.analise{background:#eef7f0;color:#2a8a4a}
+
+    .actions button{margin-left:6px;border-radius:8px;border:1px solid rgba(11,18,32,0.06);padding:6px 8px;cursor:pointer;background:transparent}
+    .action-small{font-size:14px;padding:6px 8px;border-radius:6px}
+
+    /* forms */
+    .form-wrap{max-width:980px;margin:0 auto;background:transparent;padding:20px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .form-grid input, .form-grid textarea, .form-grid select{padding:10px;border:1px solid rgba(11,18,32,0.07);border-radius:8px;background:transparent;color:var(--text);outline:none}
+    .form-full{grid-column:1/-1}
+    .submit{margin-top:14px;background:#243b7a;color:white;border-radius:8px;padding:10px 16px;border:none;cursor:pointer}
+
+    /* login */
+    .login{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;height:70vh}
+    .login-card{max-width:420px;width:100%;padding:26px;border-radius:12px;background:var(--card-bg);box-shadow:0 6px 18px rgba(2,6,23,0.06)}
+    .login-card h2{color:var(--accent);text-align:center;margin-bottom:18px}
+    .field{margin-bottom:12px}
+    .field input{width:100%;padding:10px;border:1px solid rgba(11,18,32,0.06);border-radius:8px;outline:none;background:transparent;color:var(--text)}
+    .login-btn{width:100%;padding:10px;background:var(--accent);color:white;border-radius:8px;border:none;cursor:pointer}
+
+    /* small helpers */
+    .muted{color:var(--muted);font-size:13px}
+    .row{display:flex;gap:12px;align-items:center}
+    .right{text-align:right}
+
+    /* attachments list */
+    .attachments-list{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+    .attach-item{display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:8px;border:1px solid rgba(11,18,32,0.04)}
+
+    /* responsive */
+    @media (max-width:768px){
+      .app{flex-direction:column;padding:12px}
+      .sidebar{width:100%;flex-direction:row;flex-wrap:wrap;justify-content:space-between;gap:8px}
+      .form-grid{grid-template-columns:1fr}
+      .search-wrap{max-width:100%}
+    }
+
+      @media (max-width:375px){
+      .app{flex-direction:column;padding:12px}
+      .sidebar{width:100%;flex-direction:row;flex-wrap:wrap;justify-content:space-between;gap:8px}
+      .form-grid{grid-template-columns:1fr}
+      .search-wrap{max-width:100%}
+    }
+
+    @media (max-width:1280px){
+      .app{flex-direction:column;padding:12px}
+      .sidebar{width:100%;flex-direction:row;flex-wrap:wrap;justify-content:space-between;gap:8px}
+      .form-grid{grid-template-columns:1fr}
+      .search-wrap{max-width:100%}
+    }
+  </style>
+</head>
+<body data-theme="light">
+  <div id="app" class="app">
+
+    <aside class="sidebar">
+      <div class="logo">mirai</div>
+      <div class="muted">Prototipo • 2025</div>
+      <button class="nav-btn" data-page="dashboard">Meus Contratos</button>
+      <button class="nav-btn" data-page="renew">Contratos a Renovar</button>
+      <button class="nav-btn" data-page="attachments">Anexos & Documentos</button>
+      <button class="nav-btn" data-page="config">Configurações</button>
+      <div style="margin-top:auto;font-size:12px;opacity:0.9" id="companyLabel">Empresa: —</div>
+    </aside>
+
+    <main class="main">
+      <!-- Login view -->
+      <section id="page-login" class="login" style="display:none">
+        <div class="login-card">
+          <h2>Login (simulado)</h2>
+          <div class="field"><input id="loginUser" placeholder="Nome do usuário (ex: Mariana Oliveira)" type="text"></div>
+          <div class="field"><input id="loginEmail" placeholder="E-mail" type="email"></div>
+          <button class="login-btn" id="btnLogin">Entrar</button>
+        </div>
+      </section>
+
+      <!-- Dashboard view -->
+      <section id="page-dashboard">
+        <div class="top">
+          <div class="greeting">Olá, <span id="userName">Seja Bem-Vindo!</span>!</div>
+          <div class="search-wrap">
+            <input class="search" placeholder="Pesquisar contratos, fornecedor, responsável..." id="search"/>
+            <div class="muted" style="font-size:13px;margin-left:6px">Total: <strong id="totalCount">0</strong></div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="filter">Status: <span id="filterStatus" style="font-weight:600;margin-left:8px">Todos</span></div>
+          <div class="filter">Próximos 60 dias: <strong id="expiring-count">0</strong></div>
+          <div style="flex:1"></div>
+          <button class="new-ct" id="openNew">Novo contrato</button>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Nº Contrato</th>
+                <th>Fornecedor</th>
+                <th>Responsável</th>
+                <th>Início</th>
+                <th>Fim</th>
+                <th>Valor (R$)</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tb">
+              <!-- rows inserted by JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Novo / Editar Contrato view -->
+      <section id="page-novo" style="display:none">
+        <div class="form-wrap">
+          <h2 style="text-align:center;color:var(--accent)" id="formTitle">Novo contrato</h2>
+          <form id="novoForm">
+            <div class="form-grid">
+              <input name="titulo" placeholder="Título" class="form-full" />
+              <input name="empresa" placeholder="Empresa" />
+              <input name="numero" placeholder="Número (ex: CT-001/2025)" />
+              <input name="modalidade" placeholder="Modalidade" />
+              <textarea name="contratado" placeholder="Partes (Qualificação) - Contratado" class="form-full"></textarea>
+              <textarea name="contratante" placeholder="Partes (Qualificação) - Contratante" class="form-full"></textarea>
+              <input name="inicio" placeholder="Data de início" type="date" />
+              <input name="fim" placeholder="Data de término" type="date" />
+              <input name="vigencia" placeholder="Vigência e Prazo" class="form-full" />
+              <input name="rescisao" placeholder="Rescisão e Multa" class="form-full" />
+              <input name="valor" placeholder="Valor (R$)" />
+              <select name="status">
+                <option value="Ativo">Ativo</option>
+                <option value="Em Renovação">Em Renovação</option>
+                <option value="Vencido">Vencido</option>
+                <option value="Em Análise">Em Análise</option>
+                <option value="Encerrado">Encerrado</option>
+              </select>
+              <input name="responsavel" placeholder="Responsável (nome)" />
+            </div>
+            <div style="text-align:right;margin-top:12px">
+              <button class="submit" type="submit">Salvar</button>
+              <button class="submit" type="button" id="cancelForm" style="background:#999;margin-left:8px">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Contratos a renovar -->
+      <section id="page-renew" style="display:none">
+        <div class="card container">
+          <h2>Contratos a Renovar (próximos 60 dias)</h2>
+          <p class="muted">Lista automática baseada na data de término.</p>
+          <table>
+            <thead>
+              <tr><th>Nº</th><th>Fornecedor</th><th>Fim</th><th>Dias Restantes</th><th>Ações</th></tr>
+            </thead>
+            <tbody id="tbRenew"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Anexos & Documentos -->
+      <section id="page-attachments" style="display:none">
+        <div class="card container">
+          <h2>Anexos & Documentos</h2>
+          <p class="muted">Upload simulado — os arquivos ficam no localStorage (somente front-end).</p>
+          <div style="display:flex;gap:12px;align-items:center;margin:12px 0">
+            <input type="file" id="fileInput" />
+            <select id="fileContratoSelect"></select>
+            <button class="submit" id="uploadBtn">Upload</button>
+          </div>
+          <ul class="attachments-list" id="attachmentsList"></ul>
+        </div>
+      </section>
+
+      <!-- Configurações -->
+      <section id="page-config" style="display:none">
+        <div class="card container">
+          <h2>Configurações</h2>
+          <form id="configForm" style="max-width:600px">
+            <div class="form-grid">
+              <input name="companyName" placeholder="Nome da empresa" />
+              <input name="notificationEmail" placeholder="E-mail para notificações" />
+              <select name="theme">
+                <option value="light">Tema: Claro</option>
+                <option value="dark">Tema: Escuro</option>
+              </select>
+            </div>
+            <div style="text-align:right;margin-top:12px">
+              <button class="submit" type="submit">Salvar</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Meus Contratos -->
+      <section id="page-meus" style="display:none">
+        <div class="card container">
+          <h2>Meus Contratos</h2>
+          <p class="muted">Contratos onde você é o responsável (usuário logado).</p>
+          <table>
+            <thead><tr><th>Nº</th><th>Fornecedor</th><th>Início</th><th>Fim</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="tbMeus"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    /*********************
+     *  Protótipo JS
+     *  - persiste em localStorage
+     *  - telas: dashboard, novo, renew, attachments, config, meus
+     *********************/
+
+    // --- Initial fake DB (will be stored to localStorage on first load)
+    const SAMPLE_CONTRACTS = [
+      { id: 101, numero:'CT-101/2024', titulo:'Fornecimento de TI', empresa:'AlfaTech Soluções LTDA', fornecedor:'AlfaTech Soluções LTDA', contratante:'Empresa X', contratado:'AlfaTech', responsavel:'Mariana Oliveira', inicio:'2024-01-05', fim:'2025-01-05', valor:'185000.00', vigencia:'12 meses', rescisao:'Multa 10%', status:'Ativo', modalidade:'Serviços' },
+      { id: 102, numero:'CT-102/2024', titulo:'Serviços de Limpeza', empresa:'Beta Serviços', fornecedor:'Beta Serviços de Limpeza', contratante:'Empresa Y', contratado:'Beta Serviços', responsavel:'João Pereira', inicio:'2024-03-10', fim:'2025-03-10', valor:'72500.00', vigencia:'12 meses', rescisao:'Multa 5%', status:'Em Renovação', modalidade:'Terceirização' },
+      { id: 103, numero:'CT-103/2023', titulo:'Consultoria Estratégica', empresa:'Delta Consultoria', fornecedor:'Delta Consultoria', contratante:'Empresa Z', contratado:'Delta', responsavel:'Ana Souza', inicio:'2023-02-15', fim:'2024-02-15', valor:'210000.00', vigencia:'12 meses', rescisao:'Multa 12%', status:'Vencido', modalidade:'Consultoria' },
+      { id: 104, numero:'CT-104/2025', titulo:'Serviços de Telecom', empresa:'SkyNet Telecom', fornecedor:'SkyNet Telecom', contratante:'Empresa A', contratado:'SkyNet', responsavel:'Ricardo Lima', inicio:'2025-07-01', fim:'2027-07-01', valor:'348900.00', vigencia:'24 meses', rescisao:'Conforme cláusula', status:'Em Análise', modalidade:'Infraestrutura' },
+      { id: 105, numero:'CT-105/2024', titulo:'Fornecimento Escritório', empresa:'GreenOffice', fornecedor:'GreenOffice Supplies', contratante:'Empresa B', contratado:'GreenOffice', responsavel:'Laura Martins', inicio:'2024-09-22', fim:'2026-09-22', valor:'94300.00', vigencia:'24 meses', rescisao:'Multa 8%', status:'Ativo', modalidade:'Fornecimento' },
+      // add more to show table density
+      { id: 106, numero:'CT-106/2024', titulo:'Manutenção Predial', empresa:'ManutPred', fornecedor:'ManutPred Ltda', contratante:'Empresa C', contratado:'ManutPred', responsavel:'Mariana Oliveira', inicio:'2024-05-01', fim:'2025-05-01', valor:'42000.00', vigencia:'12 meses', rescisao:'Multa 6%', status:'Ativo', modalidade:'Serviços' },
+      { id: 107, numero:'CT-107/2024', titulo:'Segurança Patrimonial', empresa:'SegPlus', fornecedor:'SegPlus Segurança', contratante:'Empresa D', contratado:'SegPlus', responsavel:'Carlos Mendes', inicio:'2024-10-15', fim:'2025-10-15', valor:'98000.00', vigencia:'12 meses', rescisao:'Multa 7%', status:'Ativo', modality:'Serviços' },
+      { id: 108, numero:'CT-108/2024', titulo:'Marketing Digital', empresa:'MarketNow', fornecedor:'MarketNow Agência', contratante:'Empresa E', contratado:'MarketNow', responsavel:'Ana Souza', inicio:'2024-11-01', fim:'2025-05-01', valor:'35000.00', vigencia:'6 meses', rescisao:'Proporcional', status:'Em Renovação', modalidade:'Marketing' }
+    ];
+
+    const STORAGE_KEYS = {
+      contracts: 'prot_contracts_v1',
+      attachments: 'prot_attachments_v1',
+      settings: 'prot_settings_v1',
+      user: 'prot_user_v1'
+    };
+
+    // --- util helpers
+    function saveContracts(list){ localStorage.setItem(STORAGE_KEYS.contracts, JSON.stringify(list)); }
+    function loadContracts(){
+      const raw = localStorage.getItem(STORAGE_KEYS.contracts);
+      if(!raw){ localStorage.setItem(STORAGE_KEYS.contracts, JSON.stringify(SAMPLE_CONTRACTS)); return SAMPLE_CONTRACTS.slice(); }
+      try { return JSON.parse(raw); } catch(e){ return SAMPLE_CONTRACTS.slice(); }
+    }
+
+    function saveAttachments(list){ localStorage.setItem(STORAGE_KEYS.attachments, JSON.stringify(list)); }
+    function loadAttachments(){ const raw = localStorage.getItem(STORAGE_KEYS.attachments); return raw ? JSON.parse(raw) : []; }
+
+    function saveSettings(s){ localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(s)); }
+    function loadSettings(){ const raw = localStorage.getItem(STORAGE_KEYS.settings); return raw ? JSON.parse(raw) : { companyName:'Mirai Ltda', notificationEmail:'', theme:'light' }; }
+
+    function saveUser(u){ localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(u)); }
+    function loadUser(){ const raw = localStorage.getItem(STORAGE_KEYS.user); return raw ? JSON.parse(raw) : null; }
+
+    function formatDateISOtoBR(iso){
+      if(!iso) return '—';
+      const d = new Date(iso + (iso.length===10? 'T00:00:00' : ''));
+      if(isNaN(d)) return iso;
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const yyyy = d.getFullYear();
+      return dd + '/' + mm + '/' + yyyy;
+    }
+
+    function daysUntil(isoDate){
+      const now = new Date(); now.setHours(0,0,0,0);
+      const d = new Date(isoDate + 'T00:00:00');
+      const diff = Math.ceil((d - now) / (1000*60*60*24));
+      return diff;
+    }
+
+    // --- state
+    let contracts = loadContracts();
+    let attachments = loadAttachments();
+    let settings = loadSettings();
+    let currentUser = loadUser(); // {name,email}
+
+    // --- UI refs
+    const tb = document.getElementById('tb');
+    const totalCountEl = document.getElementById('totalCount');
+    const expiringCountEl = document.getElementById('expiring-count');
+    const companyLabel = document.getElementById('companyLabel');
+    const userNameEl = document.getElementById('userName');
+
+    // initialize labels
+    function applySettings(){
+      document.body.setAttribute('data-theme', settings.theme || 'light');
+      companyLabel.textContent = 'Empresa: ' + (settings.companyName || '—');
+      document.querySelectorAll('[name="companyName"]').forEach(i => { if(i) i.value = settings.companyName || ''; });
+      document.querySelectorAll('[name="notificationEmail"]').forEach(i => { if(i) i.value = settings.notificationEmail || ''; });
+      document.querySelectorAll('[name="theme"]').forEach(s => { if(s) s.value = settings.theme || 'light'; });
+    }
+
+    function renderTable(list){
+      tb.innerHTML = '';
+      list.forEach((c, i)=>{
+        const tr = document.createElement('tr');
+        // status class logic
+        const statusClass = (c.status || '').toLowerCase().includes('ativo') ? 'ativo'
+          : (c.status || '').toLowerCase().includes('vence') ? 'vence'
+          : (c.status || '').toLowerCase().includes('encerr') ? 'encerrado'
+          : 'analise';
+        const valorDisplay = c.valor ? Number(c.valor).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}) : '0,00';
+        tr.innerHTML = `
+          <td>${c.numero || '—'}</td>
+          <td>${c.fornecedor || c.empresa || '—'}</td>
+          <td>${c.responsavel || '—'}</td>
+          <td>${formatDateISOtoBR(c.inicio)}</td>
+          <td>${formatDateISOtoBR(c.fim)}</td>
+          <td>R$ ${valorDisplay}</td>
+          <td><span class="status ${statusClass}">${c.status || '—'}</span></td>
+          <td class="actions">
+            <button class="action-small" title="Visualizar" onclick="viewContract(${c.id})">🔍</button>
+            <button class="action-small" title="Editar" onclick="startEdit(${c.id})">✏️</button>
+            <button class="action-small" title="Excluir" onclick="deleteContract(${c.id})">🗑️</button>
+          </td>
+        `;
+        tb.appendChild(tr);
+      });
+      totalCountEl.textContent = list.length;
+      expiringCountEl.textContent = contracts.filter(c => {
+        if(!c.fim) return false;
+        const d = daysUntil(c.fim);
+        return d >= 0 && d <= 60;
+      }).length;
+    }
+
+    // --- CRUD
+    function createContract(obj){
+      obj.id = Date.now() + Math.floor(Math.random()*999);
+      contracts.push(obj);
+      saveContracts(contracts);
+      renderTable(contracts);
+      fillContractSelect();
+    }
+    function updateContract(id, obj){
+      const idx = contracts.findIndex(c => c.id === id);
+      if(idx>-1){ contracts[idx] = {...contracts[idx], ...obj}; saveContracts(contracts); renderTable(contracts); fillContractSelect(); }
+    }
+    function deleteContract(id){
+      if(!confirm('Deseja excluir o contrato selecionado?')) return;
+      contracts = contracts.filter(c => c.id !== id);
+      saveContracts(contracts);
+      renderTable(contracts);
+      fillContractSelect();
+    }
+
+    // view in alert (simple)
+    function viewContract(id){
+      const c = contracts.find(x => x.id === id);
+      if(!c) return alert('Contrato não encontrado');
+      const txt = `
+Número: ${c.numero}
+Título: ${c.titulo || '—'}
+Fornecedor: ${c.fornecedor}
+Responsável: ${c.responsavel}
+Início: ${formatDateISOtoBR(c.inicio)}
+Fim: ${formatDateISOtoBR(c.fim)}
+Valor: R$ ${Number(c.valor||0).toLocaleString('pt-BR', {minimumFractionDigits:2})}
+Status: ${c.status}
+Vigência: ${c.vigencia || '—'}
+Rescisão: ${c.rescisao || '—'}
+      `;
+      alert(txt);
+    }
+
+    // --- Edit flow (populate form)
+    let editingId = null;
+    function startEdit(id){
+      const c = contracts.find(x => x.id===id);
+      if(!c) return alert('Contrato não encontrado');
+      editingId = id;
+      show('novo');
+      document.getElementById('formTitle').textContent = 'Editar contrato';
+      // populate form
+      const f = document.getElementById('novoForm');
+      f.elements['titulo'].value = c.titulo || '';
+      f.elements['empresa'].value = c.empresa || c.fornecedor || '';
+      f.elements['numero'].value = c.numero || '';
+      f.elements['modalidade'].value = c.modalidade || '';
+      f.elements['contratado'].value = c.contratado || '';
+      f.elements['contratante'].value = c.contratante || '';
+      f.elements['inicio'].value = c.inicio || '';
+      f.elements['fim'].value = c.fim || '';
+      f.elements['vigencia'].value = c.vigencia || '';
+      f.elements['rescisao'].value = c.rescisao || '';
+      f.elements['valor'].value = c.valor || '';
+      f.elements['status'].value = c.status || 'Ativo';
+      f.elements['responsavel'].value = c.responsavel || '';
+    }
+
+    // --- Navigation
+    const pages = {
+      login:'#page-login', dashboard:'#page-dashboard', novo:'#page-novo',
+      renew:'#page-renew', attachments:'#page-attachments', config:'#page-config',
+      meus:'#page-meus'
+    };
+
+    function show(page){
+      Object.values(pages).forEach(sel=>{
+        const el = document.querySelector(sel);
+        if(el) el.style.display = 'none';
+      });
+      const target = document.querySelector(pages[page]);
+      if(target) target.style.display = 'block';
+      // update some dynamic content
+      if(page === 'dashboard') renderTable(contracts);
+      if(page === 'renew') renderRenewals();
+      if(page === 'attachments') renderAttachments();
+      if(page === 'meus') renderMyContracts();
+    }
+
+    // sidebar nav wiring
+    document.querySelectorAll('.nav-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=> {
+        const page = btn.getAttribute('data-page');
+        if(page === 'dashboard') show('dashboard');
+        else if(page === 'renew') show('renew');
+        else if(page === 'attachments') show('attachments');
+        else if(page === 'config') show('config');
+      });
+    });
+
+    // initial show
+    function ensureUser(){
+      currentUser = loadUser();
+      if(currentUser){
+        userNameEl.textContent = currentUser.name;
+      } else {
+        userNameEl.textContent = 'visitante';
+      }
+    }
+
+    // wire new contract button
+    document.getElementById('openNew').addEventListener('click', ()=>{
+      editingId = null;
+      document.getElementById('formTitle').textContent = 'Novo contrato';
+      document.getElementById('novoForm').reset();
+      show('novo');
+    });
+
+    document.getElementById('cancelForm').addEventListener('click', ()=>{
+      show('dashboard');
+      editingId = null;
+    });
+
+    // form submit (create or update)
+    document.getElementById('novoForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const data = new FormData(this);
+      const obj = {
+        titulo: data.get('titulo'),
+        empresa: data.get('empresa'),
+        numero: data.get('numero'),
+        modalidade: data.get('modalidade'),
+        contratado: data.get('contratado'),
+        contratante: data.get('contratante'),
+        inicio: data.get('inicio'),
+        fim: data.get('fim'),
+        vigencia: data.get('vigencia'),
+        rescisao: data.get('rescisao'),
+        valor: data.get('valor'),
+        status: data.get('status'),
+        responsavel: data.get('responsavel')
+      };
+      if(editingId){
+        updateContract(editingId, obj);
+        alert('Contrato atualizado.');
+        editingId = null;
+      } else {
+        createContract(obj);
+        alert('Contrato criado.');
+      }
+      this.reset();
+      show('dashboard');
+    });
+
+    // search
+    document.getElementById('search').addEventListener('input', function(){
+      const q = this.value.toLowerCase().trim();
+      if(!q) return renderTable(contracts);
+      const filtered = contracts.filter(c => (Object.values(c).join(' ')).toLowerCase().includes(q));
+      renderTable(filtered);
+    });
+
+    // --- Renewals
+    function renderRenewals(){
+      const tbRenew = document.getElementById('tbRenew');
+      tbRenew.innerHTML = '';
+      const today = new Date(); today.setHours(0,0,0,0);
+      contracts.forEach(c => {
+        if(!c.fim) return;
+        const d = new Date(c.fim + 'T00:00:00');
+        const diff = Math.ceil((d - today)/(1000*60*60*24));
+        if(diff >= 0 && diff <= 60){
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${c.numero}</td><td>${c.fornecedor}</td><td>${formatDateISOtoBR(c.fim)}</td><td>${diff} dias</td>
+            <td>
+              <button class="action-small" onclick="startEdit(${c.id})">✏️ Editar</button>
+              <button class="action-small" onclick="deleteContract(${c.id})">🗑️ Excluir</button>
+            </td>`;
+          tbRenew.appendChild(tr);
+        }
+      });
+    }
+
+    // --- Attachments (simulated)
+    function fillContractSelect(){
+      const sel = document.getElementById('fileContratoSelect');
+      sel.innerHTML = '<option value="">Selecionar contrato (opcional)</option>';
+      contracts.forEach(c=>{
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.numero} — ${c.fornecedor}`;
+        sel.appendChild(opt);
+      });
+    }
+
+    document.getElementById('uploadBtn').addEventListener('click', ()=>{
+      const input = document.getElementById('fileInput');
+      const file = input.files[0];
+      if(!file) return alert('Selecione um arquivo primeiro.');
+      const contratoId = document.getElementById('fileContratoSelect').value || null;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const base64 = e.target.result;
+        const item = {
+          id: Date.now()+Math.floor(Math.random()*999),
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          contratoId: contratoId ? Number(contratoId) : null,
+          uploadedAt: (new Date()).toISOString(),
+          data: base64
+        };
+        attachments.push(item);
+        saveAttachments(attachments);
+        renderAttachments();
+        input.value = '';
+        alert('Arquivo salvo (simulado) no protótipo.');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function renderAttachments(){
+      const list = document.getElementById('attachmentsList');
+      list.innerHTML = '';
+      if(attachments.length === 0){
+        list.innerHTML = '<li class="muted">Nenhum anexo</li>';
+        fillContractSelect();
+        return;
+      }
+      attachments.forEach(a=>{
+        const li = document.createElement('li');
+        li.className = 'attach-item';
+        const contractLabel = a.contratoId ? (contracts.find(c=>c.id===a.contratoId)?.numero || '—') : '—';
+        li.innerHTML = `<div><strong>${a.name}</strong> <span class="muted">(${Math.round(a.size/1024)} KB) — Contrato: ${contractLabel}</span></div>
+          <div style="display:flex;gap:8px">
+            <button class="action-small" onclick='viewAttachment("${a.id}")'>🔎 Ver</button>
+            <button class="action-small" onclick='deleteAttachment("${a.id}")'>🗑️ Excluir</button>
+          </div>`;
+        list.appendChild(li);
+      });
+      fillContractSelect();
+    }
+
+    function viewAttachment(id){
+      const a = attachments.find(x => x.id == id);
+      if(!a) return alert('Arquivo não encontrado');
+      // open in new tab if image/pdf else show name
+      if(a.data && (a.type.startsWith('image/') || a.type === 'application/pdf')){
+        const w = window.open();
+        w.document.write(`<title>${a.name}</title>`);
+        if(a.type.startsWith('image/')) w.document.write(`<img src="${a.data}" style="max-width:100%;height:auto"/>`);
+        else w.document.write(`<iframe src="${a.data}" style="width:100%;height:100vh;border:0"></iframe>`);
+      } else {
+        alert(`Arquivo: ${a.name}\nTipo: ${a.type}\nTamanho: ${Math.round(a.size/1024)} KB`);
+      }
+    }
+    function deleteAttachment(id){
+      if(!confirm('Excluir anexo?')) return;
+      attachments = attachments.filter(a=>a.id != id);
+      saveAttachments(attachments);
+      renderAttachments();
+    }
+
+    // --- Config form
+    document.getElementById('configForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const fd = new FormData(this);
+      settings.companyName = fd.get('companyName');
+      settings.notificationEmail = fd.get('notificationEmail');
+      settings.theme = fd.get('theme');
+      saveSettings(settings);
+      applySettings();
+      alert('Configurações salvas.');
+    });
+
+    // --- My contracts (where responsavel == current user name)
+    function renderMyContracts(){
+      const tbMeus = document.getElementById('tbMeus');
+      tbMeus.innerHTML = '';
+      if(!currentUser){
+        tbMeus.innerHTML = '<tr><td colspan="6" class="muted">Faça login para ver seus contratos.</td></tr>';
+        return;
+      }
+      const mine = contracts.filter(c => (c.responsavel || '').toLowerCase() === (currentUser.name || '').toLowerCase());
+      if(mine.length === 0){
+        tbMeus.innerHTML = '<tr><td colspan="6" class="muted">Nenhum contrato atribuído a você.</td></tr>';
+        return;
+      }
+      mine.forEach(c=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${c.numero}</td><td>${c.fornecedor}</td><td>${formatDateISOtoBR(c.inicio)}</td><td>${formatDateISOtoBR(c.fim)}</td><td>${c.status}</td>
+          <td><button class="action-small" onclick="viewContract(${c.id})">🔍</button> <button class="action-small" onclick="startEdit(${c.id})">✏️</button></td>`;
+        tbMeus.appendChild(tr);
+      });
+    }
+
+    // --- Login simulated
+    document.getElementById('btnLogin').addEventListener('click', ()=>{
+      const name = document.getElementById('loginUser').value.trim();
+      const email = document.getElementById('loginEmail').value.trim();
+      if(!name || !email) return alert('Preencha nome e e-mail para logar (simulado).');
+      currentUser = { name, email };
+      saveUser(currentUser);
+      ensureUser();
+      alert('Logado como ' + name);
+      show('dashboard');
+    });
+
+    // logout helper (not in UI) - for dev
+    window._logout = function(){ localStorage.removeItem(STORAGE_KEYS.user); currentUser = null; ensureUser(); show('dashboard'); alert('Logout (simulado)'); }
+
+    // expose some functions for buttons inside generated HTML
+    window.startEdit = startEdit;
+    window.deleteContract = deleteContract;
+    window.viewContract = viewContract;
+    window.viewAttachment = viewAttachment;
+    window.deleteAttachment = deleteAttachment;
+
+    // fill contract select & initial render
+    function init(){
+      applySettings();
+      ensureUser();
+      renderTable(contracts);
+      fillContractSelect();
+      renderAttachments();
+      document.getElementById('totalCount').textContent = contracts.length;
+    }
+
+    // load attachments and settings from storage
+    attachments = loadAttachments();
+    settings = loadSettings();
+    contracts = loadContracts();
+    init();
+
+    // show dashboard by default
+    show('dashboard');
+
+    // expose renderTable for debugging
+    window.renderTable = renderTable;
+
+  </script>
+</body>
+</html>
+
