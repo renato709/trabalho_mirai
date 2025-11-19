@@ -64,7 +64,7 @@
 
     .status.ativo{background:#e8f5ff;color:#0a6cff}
     .status.vence{background:#fff6e6;color:#d47b00}
-    .status.encerrado{background:#fdecec;color:#b30000}
+    .status.encerrado{background:#fdecec;color:#bd0505}
     .status.analise{background:#eef7f0;color:#2a8a4a}
 
     .actions button{margin-left:6px;border-radius:8px;border:1px solid rgba(11,18,32,0.06);padding:6px 8px;cursor:pointer;background:transparent}
@@ -115,13 +115,199 @@
       .form-grid{grid-template-columns:1fr}
       .search-wrap{max-width:100%}
     }
+
+    /* ===== PAINEL DE GESTÃO ===== */
+
+.dashboard {
+    padding: 20px;
+}
+
+.dashboard h2 {
+    margin-bottom: 20px;
+    font-size: 26px;
+}
+
+/* ==== CARDS ==== */
+
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.dash-card {
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.dash-card h3 {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.dash-number {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.dash-number.alert {
+    color: #d9534f;
+}
+
+.dash-number.success {
+    color: #5cb85c;
+}
+
+.dash-sub {
+    font-size: 12px;
+    color: #777;
+}
+
+/* ==== GRÁFICO CIRCULAR ==== */
+
+.dashboard-graphic-container {
+    display: flex;
+    gap: 30px;
+    margin-top: 30px;
+    align-items: center;
+}
+
+.circle-chart {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: conic-gradient(#28a745 0% 72%, #ddd 72% 100%);
+    position: relative;
+}
+
+.inner-circle {
+    width: 120px;
+    height: 120px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 30px;
+    left: 30px;
+}
+
+.circle-label {
+    position: absolute;
+    width: 100%;
+    top: 55px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.circle-label span {
+    font-size: 12px;
+    color: #777;
+}
+
+/* ==== BARRAS DE PROGRESSO ==== */
+
+.section-title {
+    margin-top: 40px;
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+.progress-block {
+    margin-bottom: 12px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background: #e5e5e5;
+    border-radius: 8px;
+}
+
+.progress-bar div {
+    height: 10px;
+    background: #007bff;
+    border-radius: 8px;
+}
+
+/* ==== TABELA ==== */
+
+.dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.dashboard-table th, .dashboard-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+.status {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: white;
+}
+
+.status.green { background: #28a745; }
+.status.yellow { background: #ffc107; }
+.status.red { background: #dc3545; }
+
+/* ==== RESPONSIVIDADE ==== */
+
+ @media (max-width:768px){
+      .app{flex-direction:column;padding:12px}
+      .sidebar{width:100%;flex-direction:row;flex-wrap:wrap;justify-content:space-between;gap:8px}
+      .form-grid{grid-template-columns:1fr}
+      .search-wrap{max-width:100%}
+    }
+
+      @media (max-width:375px){
+      .app{flex-direction:column;padding:12px}
+      .sidebar{width:100%;flex-direction:row;flex-wrap:wrap;justify-content:space-between;gap:8px}
+      .form-grid{grid-template-columns:1fr}
+      .search-wrap{max-width:100%}
+    }
+
+    @media (max-width:1280px){
+      .app{flex-direction:column;padding:12px}
+      .sidebar{width:100%;flex-direction:row;flex-wrap:wrap;justify-content:space-between;gap:8px}
+      .form-grid{grid-template-columns:1fr}
+      .search-wrap{max-width:100%}
+    }
+.sidebar .logo {
+  width: 120px;     /* largura do espaço do logo */
+  padding: 20px 0;  /* espaço acima/abaixo */
+  display: flex;
+  justify-content: center;  /* centraliza horizontalmente */
+  background: transparent !important;
+  width: auto;
+  height: auto;
+  padding: 0;
+  background: none;
+   box-shadow: 0 2px 6px rgba(0,0,0,0.15); 
+}
+
+.sidebar .logo img {
+  width: 100%;      /* imagem ajusta ao tamanho do container */
+  height: auto;     /* mantém proporção */
+}
+
   </style>
 </head>
 <body data-theme="light">
   <div id="app" class="app">
 
     <aside class="sidebar">
-      <div class="logo">mirai</div>
+      <div class="logo">
+         <img src="file:///C:/Users/renato.rocha/Downloads/988e46a2-72a2-458d-9b88-9863f1d56e74.png" alt="Logo da Empresa">
+      </div>
       <div class="muted">Prototipo • 2025</div>
       <button class="nav-btn" data-page="dashboard">Meus Contratos</button>
       <button class="nav-btn" data-page="renew">Contratos a Renovar</button>
